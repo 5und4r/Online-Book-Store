@@ -1,0 +1,150 @@
+
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">Welcome to the Library</h1>
+
+    <!-- Science Fiction Section -->
+    <h3 class="mt-4 border-bottom pb-2">Science Fiction</h3>
+    <div class="row row-cols-1 row-cols-md-5 g-4 mt-2">
+        {% for book in scifi_books %}
+        <div class="col">
+            <!-- Added modal trigger data-bs attributes and a pointer cursor -->
+            <div class="card h-100 shadow-sm text-dark text-decoration-none" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal-{{ book.id }}">
+                {% if book.cover_url %}
+                    <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" style="height: 250px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 250px;">No Cover</div>
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h6>
+                    <p class="card-text text-muted small mb-0">{{ book.author }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Modal (Popup) specifically for THIS book -->
+        <div class="modal fade" id="modal-{{ book.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ book.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="modalLabel-{{ book.id }}">{{ book.title }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                {% if book.cover_url %}
+                                    <img src="{{ book.cover_url }}" class="img-fluid rounded shadow" alt="{{ book.title }}">
+                                {% else %}
+                                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="height: 300px;">No Cover</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <h4>{{ book.title }}</h4>
+                                <h6 class="text-muted">By {{ book.author }}</h6>
+                                <hr>
+                                <h5>Synopsis:</h5>
+                                <!-- We use truncatechars so massive descriptions don't break the screen -->
+                                <p>{{ book.description|truncatechars:600 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Replace the old modal-footer with this! -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        
+                        <!-- If they are logged in, show the working buttons -->
+                        {% if user.is_authenticated %}
+                            <form action="{% url 'add_to_vault' %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <!-- Hidden inputs to send book data to the database without needing the API again -->
+                                <input type="hidden" name="title" value="{{ book.title }}">
+                                <input type="hidden" name="author" value="{{ book.author }}">
+                                <input type="hidden" name="description" value="{{ book.description }}">
+                                <input type="hidden" name="cover_url" value="{{ book.cover_url }}">
+                                
+                                <button type="submit" name="action" value="saved" class="btn btn-outline-primary">🔖 Save Book</button>
+                                <button type="submit" name="action" value="purchased" class="btn btn-success">💳 Buy Now</button>
+                            </form>
+                        {% else %}
+                            <!-- If not logged in, prompt them to login -->
+                            <a href="{% url 'login' %}" class="btn btn-primary">Login to Save/Buy</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Fantasy Section -->
+    <h3 class="mt-5 border-bottom pb-2">Fantasy</h3>
+    <div class="row row-cols-1 row-cols-md-5 g-4 mt-2 mb-5">
+        {% for book in fantasy_books %}
+        <div class="col">
+            <div class="card h-100 shadow-sm text-dark text-decoration-none" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal-{{ book.id }}">
+                {% if book.cover_url %}
+                    <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" style="height: 250px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 250px;">No Cover</div>
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h6>
+                    <p class="card-text text-muted small mb-0">{{ book.author }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Modal for Fantasy Books -->
+        <div class="modal fade" id="modal-{{ book.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ book.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="modalLabel-{{ book.id }}">{{ book.title }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                {% if book.cover_url %}
+                                    <img src="{{ book.cover_url }}" class="img-fluid rounded shadow" alt="{{ book.title }}">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <h4>{{ book.title }}</h4>
+                                <h6 class="text-muted">By {{ book.author }}</h6>
+                                <hr>
+                                <h5>Synopsis:</h5>
+                                <p>{{ book.description|truncatechars:600 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Replace the old modal-footer with this! -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        
+                        <!-- If they are logged in, show the working buttons -->
+                        {% if user.is_authenticated %}
+                            <form action="{% url 'add_to_vault' %}" method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <!-- Hidden inputs to send book data to the database without needing the API again -->
+                                <input type="hidden" name="title" value="{{ book.title }}">
+                                <input type="hidden" name="author" value="{{ book.author }}">
+                                <input type="hidden" name="description" value="{{ book.description }}">
+                                <input type="hidden" name="cover_url" value="{{ book.cover_url }}">
+                                
+                                <button type="submit" name="action" value="saved" class="btn btn-outline-primary">🔖 Save Book</button>
+                                <button type="submit" name="action" value="purchased" class="btn btn-success">💳 Buy Now</button>
+                            </form>
+                        {% else %}
+                            <!-- If not logged in, prompt them to login -->
+                            <a href="{% url 'login' %}" class="btn btn-primary">Login to Save/Buy</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

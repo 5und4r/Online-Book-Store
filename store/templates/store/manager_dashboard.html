@@ -1,0 +1,75 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h1 class="fw-bold text-info">⚙️ Store Manager Dashboard</h1>
+        <span class="badge bg-dark fs-6">Total Registered Users: {{ all_users|length }}</span>
+    </div>
+
+    <p class="text-muted mb-4">Click on any user below to view the contents of their personal vault.</p>
+
+    <!-- Bootstrap Accordion for Users -->
+    <div class="accordion shadow-sm" id="userAccordion">
+        {% for client in all_users %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ client.id }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ client.id }}" aria-expanded="false" aria-controls="collapse{{ client.id }}">
+                        <strong>{{ client.username }}</strong> 
+                        <span class="ms-3 badge bg-secondary">Joined: {{ client.date_joined|date:"M d, Y" }}</span>
+                        {% if client.is_staff %}
+                            <span class="ms-2 badge bg-danger">Staff Member</span>
+                        {% endif %}
+                    </button>
+                </h2>
+                <div id="collapse{{ client.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ client.id }}" data-bs-parent="#userAccordion">
+                    <div class="accordion-body bg-light">
+                        
+                        <div class="row">
+                            <!-- Column for Purchased Books -->
+                            <div class="col-md-6 border-end">
+                                <h5 class="text-success border-bottom pb-1">💳 Purchased Books</h5>
+                                <ul class="list-group list-group-flush">
+                                    {% for item in client.userbook_set.all %}
+                                        {% if item.status == 'purchased' %}
+                                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                                <span class="text-truncate" style="max-width: 80%;">{{ item.book.title }}</span>
+                                                <small class="text-muted">{{ item.added_on|date:"M d" }}</small>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                <!-- Check if they have zero purchased books (A bit of tricky template logic) -->
+                                {% if not client.userbook_set.all %}
+                                    <p class="text-muted small mt-2">No purchases yet.</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Column for Saved Books -->
+                            <div class="col-md-6">
+                                <h5 class="text-primary border-bottom pb-1">🔖 Saved Wishlist</h5>
+                                <ul class="list-group list-group-flush">
+                                    {% for item in client.userbook_set.all %}
+                                        {% if item.status == 'saved' %}
+                                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                                <span class="text-truncate" style="max-width: 80%;">{{ item.book.title }}</span>
+                                                <small class="text-muted">{{ item.added_on|date:"M d" }}</small>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                {% if not client.userbook_set.all %}
+                                    <p class="text-muted small mt-2">No saved books yet.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info">No users found in the database.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

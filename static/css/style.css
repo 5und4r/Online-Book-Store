@@ -1,0 +1,352 @@
+/* =========================================================
+   1. THE LIQUID BACKGROUND (Sunlit Parchment & Classic Library)
+   ========================================================= */
+body {
+    background: linear-gradient(-45deg, #fdfbfb, #fef08a, #ffedd5, #eaddcf);
+    background-size: 400% 400%;
+    animation: liquidFlow 15s ease infinite;
+    min-height: 100vh;
+    color: #2c1810; 
+    font-family: 'Georgia', 'Times New Roman', serif; 
+    transition: background 0.5s ease, color 0.5s ease; 
+}
+
+@keyframes liquidFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* =========================================================
+   2. THE FROSTED GLASS EFFECT (BRIGHT MODE)
+   ========================================================= */
+.navbar, .card, .modal-content, .bg-light, .bg-white, .alert-light {
+    background: rgba(255, 255, 255, 0.45) !important; 
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important; 
+    box-shadow: 0 10px 35px 0 rgba(69, 26, 3, 0.08) !important; 
+    color: #2c1810 !important;
+    transition: all 0.5s ease; 
+}
+
+.navbar, .btn, .badge, .form-control {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.text-dark, .text-white, .text-light, .navbar-brand, .nav-link {
+    color: #2c1810 !important;
+    text-shadow: none !important;
+}
+.text-muted { color: #854d0e !important; } 
+.text-warning { color: #d97706 !important; } 
+.text-info { color: #0f766e !important; } 
+hr { border-color: rgba(69, 26, 3, 0.15) !important; }
+
+/* =========================================================
+   3. THE "ALIVE" NAVBAR MAGIC
+   ========================================================= */
+.navbar-brand {
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+.navbar-brand:hover {
+    transform: scale(1.05);
+    text-shadow: 0 0 15px rgba(253, 230, 138, 0.8); 
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+    position: relative;
+    font-weight: bold;
+}
+.nav-link:hover {
+    transform: translateY(-2px);
+    color: #b45309 !important; 
+}
+.nav-link i {
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.nav-link:hover i {
+    transform: scale(1.3) rotate(8deg);
+}
+
+/* =========================================================
+   4. SEAMLESS SEARCH CAPSULE & BUTTONS (LIGHT GLASS)
+   ========================================================= */
+.btn, .form-control, .form-select {
+    border-radius: 50px !important;
+}
+
+/* THE FIX: Reverted background opacity from 0.7 to 0.25 to restore the glass effect! */
+.search-capsule {
+    background: rgba(255, 255, 255, 0.25) !important; 
+    border-radius: 50px !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(15px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    overflow: hidden;
+}
+.search-capsule:focus-within {
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(253, 230, 138, 0.6) !important; 
+    border-color: #f59e0b !important; 
+    background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* THE FIX: Stripped out the experimental anti-aliasing hack that made text invisible.
+   Restored normal, sharp, highly visible bold text and icon colors. */
+.search-capsule .form-control, .search-capsule .btn {
+    background: transparent !important;
+    border: none !important;
+    color: #2c1810 !important; 
+    box-shadow: none !important;
+    font-weight: 600 !important; 
+}
+.search-capsule .form-control::placeholder {
+    color: #78350f !important; 
+    opacity: 1 !important;
+}
+.search-capsule .btn:hover {
+    background: rgba(245, 158, 11, 0.2) !important; 
+    color: #b45309 !important;
+}
+
+/* Form Inputs outside navbar */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.25) !important; /* Fixed opacity here too */
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    color: #2c1810 !important;
+    backdrop-filter: blur(10px);
+}
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 15px rgba(253, 230, 138, 0.5) !important;
+    border-color: #f59e0b !important;
+    background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Base Button Animation */
+.btn {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    font-weight: bold;
+}
+
+/* Light/White Buttons */
+.btn-light, .btn-outline-light, .btn-outline-secondary {
+    background: rgba(255, 255, 255, 0.4) !important;
+    border: 1px solid rgba(44, 24, 16, 0.3) !important;
+    color: #2c1810 !important;
+}
+.btn-light:hover, .btn-outline-light:hover, .btn-outline-secondary:hover {
+    background: #2c1810 !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(44, 24, 16, 0.3) !important;
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Danger / Red (Logout) */
+.btn-danger {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border: 1px solid rgba(220, 53, 69, 0.5) !important;
+    color: #b91c1c !important;
+}
+.btn-danger:hover {
+    background: #dc3545 !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3) !important;
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Primary / Blue */
+.btn-primary, .btn-outline-primary {
+    background: rgba(30, 64, 175, 0.1) !important;
+    border: 1px solid rgba(30, 64, 175, 0.5) !important;
+    color: #1e40af !important;
+}
+.btn-primary:hover, .btn-outline-primary:hover {
+    background: #1e40af !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(30, 64, 175, 0.3) !important;
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Success / Green */
+.btn-success {
+    background: rgba(21, 128, 61, 0.1) !important;
+    border: 1px solid rgba(21, 128, 61, 0.5) !important;
+    color: #15803d !important;
+}
+.btn-success:hover {
+    background: #15803d !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(21, 128, 61, 0.3) !important;
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Warning / Yellow */
+.btn-warning {
+    background: rgba(217, 119, 6, 0.1) !important;
+    border: 1px solid rgba(217, 119, 6, 0.5) !important;
+    color: #b45309 !important;
+}
+.btn-warning:hover {
+    background: #d97706 !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(217, 119, 6, 0.3) !important;
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* =========================================================
+   5. 3D CINEMATIC HOVER EFFECTS
+   ========================================================= */
+.book-card-hover {
+    transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+.book-card-hover img, .book-card-hover .badge {
+    transform: translateZ(30px);
+    transition: transform 0.3s ease;
+}
+.bi-stars, .bi-robot {
+    display: inline-block;
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+/* =========================================================
+   6. MOBILE PERFECTION 
+   ========================================================= */
+.navbar-toggler {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border: 1px solid rgba(44, 24, 16, 0.2) !important;
+    border-radius: 50px !important;
+    backdrop-filter: blur(10px);
+    padding: 8px 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+.navbar-toggler:focus, .navbar-toggler:active {
+    box-shadow: 0 0 15px rgba(253, 230, 138, 0.5) !important;
+    outline: none !important;
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: rgba(255, 255, 255, 0.55); /* Fixed opacity here too */
+        border-radius: 20px;
+        padding: 20px;
+        margin-top: 15px;
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 10px 30px rgba(69, 26, 3, 0.15);
+    }
+    .nav-item {
+        margin-bottom: 12px;
+        text-align: center;
+        width: 100%;
+    }
+    .navbar-nav .btn {
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+        display: block;
+    }
+}
+
+/* =========================================================
+   7. CINEMATIC FLY-THROUGH MODALS
+   ========================================================= */
+@keyframes flyThroughBounce {
+    0% { opacity: 0; transform: scale(0.3) translateY(100px); }
+    60% { opacity: 1; transform: scale(1.05) translateY(-10px); }
+    80% { transform: scale(0.98) translateY(5px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal.fade .modal-dialog {
+    transition: none !important;
+    transform: scale(0.3);
+}
+.modal.show .modal-dialog {
+    animation: flyThroughBounce 0.35s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards !important;
+}
+.modal-backdrop.show {
+    backdrop-filter: blur(8px);
+    background-color: rgba(44, 24, 16, 0.5) !important;
+    transition: all 0.2s ease;
+}
+
+/* =========================================================
+   8. "MIDNIGHT READING ROOM" DARK THEME
+   ========================================================= */
+body.dark-theme {
+    background: linear-gradient(-45deg, #120e1f, #23192d, #141124, #0a0812); 
+    color: #e5e0d8; 
+}
+
+/* Dark Glass Override */
+body.dark-theme .navbar, body.dark-theme .card, body.dark-theme .modal-content, 
+body.dark-theme .bg-light, body.dark-theme .bg-white, body.dark-theme .alert-light {
+    background: rgba(30, 25, 45, 0.5) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+    box-shadow: 0 10px 35px 0 rgba(0, 0, 0, 0.5) !important; 
+    color: #e5e0d8 !important;
+}
+
+/* Text Overrides for Dark Mode */
+body.dark-theme .text-dark, body.dark-theme .text-white, body.dark-theme .text-light, 
+body.dark-theme .navbar-brand, body.dark-theme .nav-link {
+    color: #e5e0d8 !important;
+}
+body.dark-theme .text-muted { color: #9ca3af !important; }
+body.dark-theme .nav-link:hover { color: #fbbf24 !important; }
+body.dark-theme hr { border-color: rgba(255, 255, 255, 0.1) !important; }
+
+/* Dark Search Capsule */
+body.dark-theme .search-capsule, body.dark-theme .form-control, body.dark-theme .form-select {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e5e0d8 !important;
+}
+body.dark-theme .search-capsule .form-control, body.dark-theme .search-capsule .btn { 
+    color: #e5e0d8 !important; 
+}
+body.dark-theme .search-capsule .form-control::placeholder, body.dark-theme .form-control::placeholder { 
+    color: #9ca3af !important; 
+    opacity: 1 !important;
+}
+body.dark-theme .search-capsule:focus-within, body.dark-theme .form-control:focus {
+    background: rgba(0, 0, 0, 0.5) !important;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3) !important;
+    border-color: #fbbf24 !important;
+}
+
+/* Dark Buttons */
+body.dark-theme .btn-light, body.dark-theme .btn-outline-light, body.dark-theme .btn-outline-secondary {
+    background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; color: #e5e0d8 !important;
+}
+body.dark-theme .btn-light:hover, body.dark-theme .btn-outline-light:hover, body.dark-theme .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Dark Mobile Nav Panel */
+@media (max-width: 991px) {
+    body.dark-theme .navbar-collapse {
+        background: rgba(20, 15, 30, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    body.dark-theme .navbar-toggler { background: rgba(0, 0, 0, 0.3) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; }
+}
+
+/* Dark Modal Background Blur */
+body.dark-theme .modal-backdrop.show { background-color: rgba(0, 0, 0, 0.8) !important; }

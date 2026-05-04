@@ -1,0 +1,298 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 mt-4 mb-5">
+    
+    <!-- Header with Clear Chat Button -->
+    <div class="d-flex justify-content-between align-items-end border-bottom pb-3 mb-4">
+        <div>
+            <h1 class="fw-bold display-5 mb-0"><i class="bi bi-robot text-primary"></i> Pages!</h1>
+            <p class="text-muted fs-5 mb-0 mt-1">Your personal guide to millions of books.</p>
+        </div>
+        <form method="POST" action="{% url 'recommender' %}">
+            {% csrf_token %}
+            <button type="submit" name="clear_chat" value="1" class="btn btn-outline-danger fw-bold shadow-sm">
+                <i class="bi bi-trash3-fill me-1"></i> Clear Chat
+            </button>
+        </form>
+    </div>
+
+    <!-- Full Window Chat Interface -->
+    <div class="card shadow border-0 border-top border-primary border-4 mb-5">
+        <div class="card-body bg-light p-4" id="chatWindow" style="height: 50vh; overflow-y: auto;">
+            {% if chat_history %}
+                {% for msg in chat_history %}
+                    {% if msg.role == 'user' %}
+                        <div class="text-end mb-3">
+                            <div class="d-inline-block bg-primary text-white p-3 rounded shadow-sm text-start fs-5" style="max-width: 75%;">
+                                {{ msg.text }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-start mb-3">
+                            <div class="d-inline-block bg-white border p-3 rounded shadow-sm fs-5" style="max-width: 75%;">
+                                <div class="text-primary fw-bold mb-1"><i class="bi bi-robot me-1"></i> Pages!</div>
+                                {{ msg.text }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="card-footer bg-white p-3 border-0">
+            <form method="POST" action="{% url 'recommender' %}" id="chatForm">
+                {% csrf_token %}
+                <div class="input-group input-group-lg shadow-sm">
+                    <input type="text" name="user_input" id="userInput" class="form-control border-primary" placeholder="Type what you want to read here..." required autocomplete="off" autofocus>
+                    
+                    <!-- VOICE ACTIVATION BUTTON -->
+                    <button type="button" id="micBtn" class="btn btn-outline-primary px-3" title="Click to Speak">
+                        <i class="bi bi-mic-fill fs-4" id="micIcon"></i>
+                    </button>
+                    
+                    <button type="submit" class="btn btn-primary px-5 fw-bold fs-5"><i class="bi bi-send-fill"></i> Ask</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recommended Books Grid -->
+    {% if books %}
+        <div class="d-flex align-items-center mb-4 border-bottom pb-2 mt-5">
+            <i class="bi bi-stars text-warning fs-3 me-2"></i>
+            <h3 class="fw-bold mb-0">Recommended For You</h3>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-5 g-4 mb-5">
+            {% for book in books %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 border-bottom border-warning border-3 book-card-hover" style="cursor: pointer; transition: transform 0.2s;" data-bs-toggle="modal" data-bs-target="#modal-ai-{{ book.id }}">
+                    
+                    {% if book.is_owned %}
+                        <div class="position-absolute top-0 end-0 p-2 z-3">
+                            <span class="badge bg-success shadow-sm rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Owned</span>
+                        </div>
+                    {% endif %}
+
+                    {% if book.cover_url %}
+                        <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" style="height: 280px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 280px;"><i class="bi bi-stars fs-1"></i></div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate fw-bold mb-1" title="{{ book.title }}">{{ book.title }}</h6>
+                        <p class="text-muted small mb-0 text-truncate">{{ book.author }}</p>
+                        
+                        <!-- THE FIX: ADD RATINGS AND PRICE TO RECOMMENDER CARDS -->
+                        <div class="d-flex flex-wrap gap-1 mt-2">
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> {{ book.rating }}</span>
+                            <span class="badge bg-success"><i class="bi bi-currency-rupee"></i>{{ book.price }}</span>
+                            {% if book.year and book.year != 'Unknown' %}<span class="badge bg-light text-dark border"><i class="bi bi-calendar3"></i> {{ book.year }}</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for AI Recommended Book -->
+            <div class="modal fade" id="modal-ai-{{ book.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-dark text-white border-0">
+                            <h5 class="modal-title"><i class="bi bi-robot text-warning me-2"></i>Pages's Pick</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-3">
+                                    {% if book.cover_url %}<img src="{{ book.cover_url }}" class="img-fluid rounded shadow-sm">{% endif %}
+                                </div>
+                                <div class="col-md-8">
+                                    <h3 class="fw-bold">{{ book.title }}</h3>
+                                    <h6 class="text-muted fs-5">By {{ book.author }}</h6>
+                                    
+                                    <!-- THE FIX: ADD RATINGS AND PRICE TO MODAL -->
+                                    <div class="d-flex flex-wrap gap-2 mt-2 mb-3">
+                                        <span class="badge bg-warning text-dark fs-6"><i class="bi bi-star-fill"></i> {{ book.rating }} / 5.0</span>
+                                        <span class="badge bg-success fs-6"><i class="bi bi-currency-rupee"></i>{{ book.price }}</span>
+                                        <span class="badge bg-primary fs-6">Published: {{ book.year }}</span>
+                                        <span class="badge bg-secondary fs-6">Pages: {{ book.pages }}</span>
+                                    </div>
+                                    <hr>
+                                    
+                                    <p class="fs-6">{{ book.description|truncatechars:400 }}</p>
+                                    
+                                    <div class="mt-4 p-3 bg-light rounded shadow-sm border atmosphere-container" data-title="{{ book.title|escapejs }}" data-description="{{ book.description|escapejs }}">
+                                        <div class="atmosphere-loading text-center py-3">
+                                            <div class="spinner-border text-warning spinner-border-sm mb-2" role="status"></div>
+                                            <p class="text-warning fw-bold mb-0" style="letter-spacing: 1px;">✨ Pages is analyzing the perfect mood...</p>
+                                        </div>
+                                        <div class="atmosphere-content d-none fade-in">
+                                            <h6 class="text-warning fw-bold text-uppercase mb-3 border-bottom pb-2"><i class="bi bi-stars"></i> The Reading Experience</h6>
+                                            <p class="mb-2 fs-6"><strong>🎵 Soundtrack:</strong> <span class="atm-soundtrack text-muted"></span></p>
+                                            <p class="mb-2 fs-6"><strong>☕ Pairing:</strong> <span class="atm-snack text-muted"></span></p>
+                                            <p class="mb-0 fs-6"><strong>🛋️ Setting:</strong> <span class="atm-setting text-muted"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+                            {% if user.is_authenticated %}
+                                {% if book.is_owned %}
+                                    <button class="btn btn-success fw-bold disabled opacity-100"><i class="bi bi-check-circle-fill me-1"></i> Purchased</button>
+                                    <a href="https://www.google.com/search?tbm=bks&q={{ book.title|urlencode }}+{{ book.author|urlencode }}" target="_blank" class="btn btn-primary fw-bold">
+                                        <i class="bi bi-book-half me-1"></i> Read Now
+                                    </a>
+                                {% else %}
+                                    <form action="{% url 'add_to_vault' %}" method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="title" value="{{ book.title }}">
+                                        <input type="hidden" name="author" value="{{ book.author }}">
+                                        <input type="hidden" name="description" value="{{ book.description }}">
+                                        <input type="hidden" name="cover_url" value="{{ book.cover_url }}">
+                                        <!-- PASS THE PRICE TO THE CHECKOUT VIEW! -->
+                                        <input type="hidden" name="price" value="{{ book.price }}">
+                                        
+                                        <button type="submit" name="action" value="saved" class="btn btn-outline-primary fw-bold">🔖 Save</button>
+                                        <!-- UPDATE BUY BUTTON UI -->
+                                        <button type="submit" name="action" value="purchased" class="btn btn-success fw-bold">💳 Buy for ₹{{ book.price }}</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-primary fw-bold">Login to Buy</a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- ========================================== -->
+<!-- VOICE ANIMATIONS & MAGIC HOVER CSS         -->
+<!-- ========================================== -->
+<style>
+    .book-card-hover:hover { transform: translateY(-5px); }
+    .fade-in { animation: fadeIn 0.8s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* The glowing radar pulse when the mic is active! */
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    .mic-active {
+        color: white !important;
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        animation: pulse-red 1.5s infinite;
+    }
+</style>
+
+<!-- JS Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. AUTO-SCROLL CHAT TO BOTTOM
+        const chatWindow = document.getElementById("chatWindow");
+        if (chatWindow) {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // 2. GHOST LOAD ATMOSPHERE GENERATOR
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const container = modal.querySelector('.atmosphere-container');
+                if (!container) return;
+                const contentDiv = container.querySelector('.atmosphere-content');
+                const loadingDiv = container.querySelector('.atmosphere-loading');
+                if (!contentDiv.classList.contains('d-none')) return; 
+                
+                const title = container.dataset.title;
+                const description = container.dataset.description;
+                
+                fetch(`/api/atmosphere/?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        container.querySelector('.atm-soundtrack').textContent = data.soundtrack;
+                        container.querySelector('.atm-snack').textContent = data.snack;
+                        container.querySelector('.atm-setting').textContent = data.setting;
+                        loadingDiv.classList.add('d-none');
+                        contentDiv.classList.remove('d-none');
+                    })
+                    .catch(error => console.error("Ghost Load Failed:", error));
+            });
+        });
+
+        // ==============================================
+        // 3. VOICE RECOGNITION AI LOGIC!
+        // ==============================================
+        const micBtn = document.getElementById('micBtn');
+        const userInput = document.getElementById('userInput');
+        const chatForm = document.getElementById('chatForm');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false; 
+            recognition.interimResults = true; 
+
+            let isListening = false;
+
+            recognition.onstart = function() {
+                isListening = true;
+                micBtn.classList.add('mic-active');
+                userInput.placeholder = "Listening... speak now! 🎙️";
+            };
+
+            recognition.onresult = function(event) {
+                let currentTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    currentTranscript += event.results[i][0].transcript;
+                }
+                userInput.value = currentTranscript;
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Mic error: ", event.error);
+                micBtn.classList.remove('mic-active');
+                userInput.placeholder = "Type what you want to read here...";
+                isListening = false;
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('mic-active');
+                userInput.placeholder = "Type what you want to read here...";
+                isListening = false;
+                
+                if (userInput.value.trim() !== '') {
+                    setTimeout(() => chatForm.submit(), 500); 
+                }
+            };
+
+            micBtn.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    userInput.value = ''; 
+                    recognition.start();
+                }
+            });
+        } else {
+            // PROFESSIONAL BROWSER FALLBACK UX
+            micBtn.addEventListener('click', () => {
+                alert("🎙️ Voice Search is a cutting-edge feature currently optimized for Google Chrome and Microsoft Edge. Please use one of those browsers to access the Voice AI Librarian!");
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Search Results for <span class="text-primary">"{{ query }}"</span></h2>
+    </div>
+
+    {% if books %}
+        <div class="row row-cols-1 row-cols-md-4 g-4 mb-5">
+            {% for book in books %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 border-bottom border-primary border-3 book-card-hover" style="cursor: pointer; transition: transform 0.2s;" data-bs-toggle="modal" data-bs-target="#modal-{{ book.id }}">
+                    
+                    <!-- THE FIX: Add the Owned Badge! -->
+                    {% if book.is_owned %}
+                        <div class="position-absolute top-0 end-0 p-2 z-3">
+                            <span class="badge bg-success shadow-sm rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Owned</span>
+                        </div>
+                    {% endif %}
+
+                    {% if book.cover_url %}
+                        <img src="{{ book.cover_url }}" class="card-img-top" alt="{{ book.title }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <i class="bi bi-book fs-1"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate fw-bold mb-1" title="{{ book.title }}">{{ book.title }}</h6>
+                        <p class="text-muted small mb-2 text-truncate">{{ book.author }}</p>
+                        
+                        <!-- THE FIX: ADD RATINGS AND PRICE TO SEARCH CARDS -->
+                        <div class="d-flex flex-wrap gap-1 mt-2">
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> {{ book.rating }}</span>
+                            <span class="badge bg-success"><i class="bi bi-currency-rupee"></i>{{ book.price }}</span>
+                            {% if book.year and book.year != 'Unknown' %}<span class="badge bg-light text-dark border"><i class="bi bi-calendar3"></i> {{ book.year }}</span>{% endif %}
+                            {% if book.pages and book.pages != 0 %}<span class="badge bg-light text-dark border"><i class="bi bi-file-earmark-text"></i> {{ book.pages }} p</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for Book Details -->
+            <div class="modal fade" id="modal-{{ book.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-dark text-white border-0">
+                            <h5 class="modal-title">{{ book.title }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-3">
+                                    {% if book.cover_url %}
+                                        <img src="{{ book.cover_url }}" class="img-fluid rounded shadow-sm" alt="{{ book.title }}">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8">
+                                    <h3 class="fw-bold">{{ book.title }}</h3>
+                                    <h6 class="text-muted fs-5">By {{ book.author }}</h6>
+                                    
+                                    <!-- THE FIX: ADD RATINGS AND PRICE TO MODAL -->
+                                    <div class="d-flex flex-wrap gap-2 mt-2 mb-3">
+                                        <span class="badge bg-warning text-dark fs-6"><i class="bi bi-star-fill"></i> {{ book.rating }} / 5.0</span>
+                                        <span class="badge bg-success fs-6"><i class="bi bi-currency-rupee"></i>{{ book.price }}</span>
+                                        <span class="badge bg-primary fs-6">Published: {{ book.year }}</span>
+                                        <span class="badge bg-secondary fs-6">Pages: {{ book.pages }}</span>
+                                    </div>
+                                    <hr>
+                                    
+                                    <p class="fs-6">{{ book.description|truncatechars:400 }}</p>
+                                    
+                                    <!-- THE GHOST ATMOSPHERE CONTAINER -->
+                                    <div class="mt-4 p-3 bg-light rounded shadow-sm border atmosphere-container" data-title="{{ book.title|escapejs }}" data-description="{{ book.description|escapejs }}">
+                                        <div class="atmosphere-loading text-center py-3">
+                                            <div class="spinner-border text-warning spinner-border-sm mb-2" role="status"></div>
+                                            <p class="text-warning fw-bold mb-0" style="letter-spacing: 1px;">✨ Pages is analyzing the perfect mood...</p>
+                                        </div>
+                                        <div class="atmosphere-content d-none fade-in">
+                                            <h6 class="text-warning fw-bold text-uppercase mb-3 border-bottom pb-2"><i class="bi bi-stars"></i> The Reading Experience</h6>
+                                            <p class="mb-2 fs-6"><strong>🎵 Soundtrack:</strong> <span class="atm-soundtrack text-muted"></span></p>
+                                            <p class="mb-2 fs-6"><strong>☕ Pairing:</strong> <span class="atm-snack text-muted"></span></p>
+                                            <p class="mb-0 fs-6"><strong>🛋️ Setting:</strong> <span class="atm-setting text-muted"></span></p>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ============================================== -->
+                        <!-- THE FIX: SMART MODAL BUTTONS                   -->
+                        <!-- ============================================== -->
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Close</button>
+                            {% if user.is_authenticated %}
+                                {% if book.is_owned %}
+                                    <button class="btn btn-success fw-bold disabled opacity-100"><i class="bi bi-check-circle-fill me-1"></i> Purchased</button>
+                                    <a href="https://www.google.com/search?tbm=bks&q={{ book.title|urlencode }}+{{ book.author|urlencode }}" target="_blank" class="btn btn-primary fw-bold">
+                                        <i class="bi bi-book-half me-1"></i> Read Now
+                                    </a>
+                                {% else %}
+                                    <form action="{% url 'add_to_vault' %}" method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="title" value="{{ book.title }}">
+                                        <input type="hidden" name="author" value="{{ book.author }}">
+                                        <input type="hidden" name="description" value="{{ book.description }}">
+                                        <input type="hidden" name="cover_url" value="{{ book.cover_url }}">
+                                        <!-- PASS THE PRICE TO THE CHECKOUT VIEW! -->
+                                        <input type="hidden" name="price" value="{{ book.price }}">
+                                        
+                                        <button type="submit" name="action" value="saved" class="btn btn-outline-primary fw-bold">🔖 Save</button>
+                                        <!-- UPDATE BUY BUTTON UI -->
+                                        <button type="submit" name="action" value="purchased" class="btn btn-success fw-bold">💳 Buy for ₹{{ book.price }}</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-primary fw-bold">Login to Buy</a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning border border-warning shadow-sm p-4">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> No books found for "{{ query }}". Try searching for a different author or title!</h5>
+        </div>
+    {% endif %}
+</div>
+
+<!-- CSS Animations & Hover Magic -->
+<style>
+    .book-card-hover:hover { transform: translateY(-5px); }
+    .fade-in { animation: fadeIn 0.8s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<!-- THE GHOST LOAD LISTENER -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('show.bs.modal', function (event) {
+                const container = modal.querySelector('.atmosphere-container');
+                if (!container) return;
+                
+                const contentDiv = container.querySelector('.atmosphere-content');
+                const loadingDiv = container.querySelector('.atmosphere-loading');
+                
+                if (!contentDiv.classList.contains('d-none')) return; 
+                
+                const title = container.dataset.title;
+                const description = container.dataset.description;
+                
+                fetch(`/api/atmosphere/?title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        container.querySelector('.atm-soundtrack').textContent = data.soundtrack;
+                        container.querySelector('.atm-snack').textContent = data.snack;
+                        container.querySelector('.atm-setting').textContent = data.setting;
+                        
+                        loadingDiv.classList.add('d-none');
+                        contentDiv.classList.remove('d-none');
+                    })
+                    .catch(error => console.error("Ghost Load Failed:", error));
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <!-- Order Summary Column -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0 bg-light h-100">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-4">Order Summary</h4>
+                    <div class="d-flex align-items-center mb-4">
+                        {% if book.cover_url %}
+                            <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="rounded shadow-sm" style="width: 80px; height: 120px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-secondary rounded shadow-sm d-flex justify-content-center align-items-center text-white" style="width: 80px; height: 120px;">No Cover</div>
+                        {% endif %}
+                        <div class="ms-3">
+                            <h6 class="fw-bold mb-1">{{ book.title }}</h6>
+                            <p class="text-muted small mb-0">{{ book.author }}</p>
+                            <span class="badge bg-primary mt-2">Digital Copy</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Price</span>
+                        <span class="fw-bold">₹{{ price|default:"499" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">GST (18%)</span>
+                        <span class="text-success fw-bold">Included</span>
+                    </div>
+                    <div class="d-flex justify-content-between border-top pt-3">
+                        <h5 class="fw-bold">Total</h5>
+                        <h5 class="fw-bold text-success">₹{{ price|default:"499" }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Details Column -->
+        <div class="col-md-7 mb-4">
+            <div class="card shadow border-0 h-100">
+                <div class="card-body p-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0">Payment Details</h4>
+                        <div class="text-muted fs-4">
+                            <i class="bi bi-credit-card-fill text-primary"></i> 🔒
+                        </div>
+                    </div>
+
+                    <form id="checkoutForm" action="{% url 'checkout' %}" method="POST" onsubmit="processPayment(event)">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Name on Card</label>
+                            <input type="text" id="cardName" class="form-control form-control-lg" placeholder="e.g. John Doe" pattern="[a-zA-Z\s]+" title="Only letters and spaces allowed" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Card Number</label>
+                            <input type="text" id="cardNumber" class="form-control form-control-lg" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" required>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <label class="form-label text-muted small fw-bold">Expiry Date</label>
+                                <input type="text" id="cardExpiry" class="form-control form-control-lg" placeholder="MM/YY" maxlength="5" inputmode="numeric" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-muted small fw-bold">CVC / CVV</label>
+                                <input type="password" id="cardCVC" class="form-control form-control-lg" placeholder="123" maxlength="3" inputmode="numeric" required>
+                            </div>
+                        </div>
+
+                        <!-- The Pay Button -->
+                        <button type="submit" id="payBtn" class="btn btn-success btn-lg w-100 fw-bold shadow-sm">
+                            <span id="btnSpinner" class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                            <span id="btnText">Pay ₹{{ price|default:"499" }} securely</span>
+                        </button>
+                        
+                        <div class="text-center mt-3">
+                            <small class="text-muted"><i class="bi bi-shield-lock-fill text-success"></i> Your transaction is simulated and 100% secure.</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mock Gateway Javascript & Form Validation -->
+<script>
+    // 1. Format Card Number
+    document.getElementById('cardNumber').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); 
+        let formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+        e.target.value = formattedValue;
+    });
+
+    // 2. Format Expiry Date
+    document.getElementById('cardExpiry').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 3) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+    });
+
+    // 3. Format CVC
+    document.getElementById('cardCVC').addEventListener('input', function (e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    // --- SMART PAYMENT PROCESSING SIMULATION ---
+    function processPayment(event) {
+        event.preventDefault(); 
+        
+        const cardNum = document.getElementById('cardNumber').value;
+        const expiry = document.getElementById('cardExpiry').value;
+        const cvc = document.getElementById('cardCVC').value;
+
+        // Ensure lengths are correct
+        if (cardNum.length < 19 || expiry.length < 5 || cvc.length < 3) {
+            alert("Please complete all credit card fields correctly.");
+            return;
+        }
+
+        // ==========================================
+        // THE FIX: STRICT EXPIRY DATE VALIDATION
+        // ==========================================
+        const parts = expiry.split('/');
+        const month = parseInt(parts[0], 10);
+        const year = parseInt(parts[1], 10) + 2000; // E.g., '25' becomes 2025
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // getMonth() is 0-indexed
+
+        // 1. Check if month is physically possible (01-12)
+        if (month < 1 || month > 12) {
+            alert("Invalid Expiry Month. Please enter a valid month (01-12).");
+            return;
+        }
+        
+        // 2. Check if the card is expired in the past
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert("This card has expired. Please use a valid, unexpired card.");
+            return;
+        }
+
+        // If validation passes, spin the button!
+        const btn = document.getElementById('payBtn');
+        const spinner = document.getElementById('btnSpinner');
+        const btnText = document.getElementById('btnText');
+
+        btn.disabled = true;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-secondary');
+        spinner.classList.remove('d-none');
+        btnText.innerText = 'Contacting Bank...';
+
+        setTimeout(() => {
+            btnText.innerText = 'Payment Approved!';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-success');
+            
+            setTimeout(() => {
+                document.getElementById('checkoutForm').submit();
+            }, 500); 
+            
+        }, 2500);
+    }
+</script>
+{% endblock %}

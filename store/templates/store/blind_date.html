@@ -1,0 +1,48 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-4 text-dark"><i class="bi bi-box-seam text-primary"></i> Blind Date with a Book</h1>
+        <p class="text-muted lead">Don't judge a book by its cover. Let the vibes decide.</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- THE FIX: Removed the hardcoded background-color so the Glass CSS takes over! -->
+            <div class="card shadow-lg border-0" style="border-radius: 15px;">
+                <!-- THE FIX: Removed 'text-white' so the text adapts to Light/Dark modes -->
+                <div class="card-body p-5 text-center">
+                    <!-- Placeholder Mystery Icon -->
+                    <i class="bi bi-question-circle-fill text-warning" style="font-size: 6rem;"></i>
+                    <h3 class="fw-bold mt-4 mb-4">A Mystery Adventure</h3>
+                    
+                    <!-- THE FIX: Swapped 'bg-dark' for 'bg-light' which our CSS turns into frosted glass! -->
+                    <div class="bg-light p-4 rounded text-start shadow-sm mb-5 border border-secondary border-opacity-25">
+                        <h6 class="text-warning fw-bold mb-3 text-uppercase" style="letter-spacing: 2px;">What to expect:</h6>
+                        <ul class="list-unstyled fs-5 mb-0 fw-bold">
+                            {% for vibe in vibes %}
+                                <li class="mb-3"><i class="bi bi-stars text-primary me-2"></i> {{ vibe }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Hidden form that sends the actual book to the Checkout Gatewy! -->
+                    <form action="{% url 'add_to_vault' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="title" value="{{ book.title }}">
+                        <input type="hidden" name="author" value="{{ book.author }}">
+                        <input type="hidden" name="description" value="{{ book.description }}">
+                        <input type="hidden" name="cover_url" value="{{ book.cover_url }}">
+                        <input type="hidden" name="action" value="purchased">
+                        
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold w-100 shadow p-3">
+                            Take a Chance ($14.99)
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

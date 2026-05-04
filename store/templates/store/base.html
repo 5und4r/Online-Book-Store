@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bookstore</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <!-- THE FIX: BUMPED TO v9.0 TO RESTORE THE SEARCH BAR AND MOVE THE TOGGLE -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=9.0">
+</head>
+<body>
+    <!-- Theme Memory Script (Runs instantly to prevent white flashes) -->
+    <script>
+        if (localStorage.getItem('bookstoreTheme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    </script>
+
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <div class="container">
+            <!-- Brand Logo -->
+            <!-- Brand Logo & Tagline -->
+            <a class="navbar-brand text-decoration-none me-4" href="{% url 'home' %}">
+                <div class="d-flex flex-column justify-content-center">
+                    <span class="text-white fw-bold" style="letter-spacing: 2px; font-size: 1.4rem;">Lumina 🔆</span>
+                    <span class="text-warning fw-semibold" style="font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.9;">
+                        Illuminating your next great obsession.
+                    </span>
+                </div>
+            </a>
+            
+            <!-- Mobile Toggle Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="{% url 'recommender' %}">✨ Ask Pages!</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold ms-lg-2" href="{% url 'blind_date' %}">
+                            <i class="bi bi-box-seam me-1"></i> Blind Date
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-light fw-bold ms-lg-2" href="#" data-bs-toggle="modal" data-bs-target="#userGuideModal">
+                            <i class="bi bi-info-circle-fill me-1"></i> User Guide
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Middle: Search Bar -->
+                <form class="mx-auto mb-3 mb-lg-0 mt-3 mt-lg-0" style="max-width: 350px; width: 100%;" action="{% url 'search' %}" method="GET">
+                    <div class="input-group search-capsule shadow-sm">
+                        <input class="form-control border-0 shadow-none ps-3" type="search" placeholder="Search by title, author..." aria-label="Search" name="q" required>
+                        <button class="btn border-0 pe-3" type="submit" title="Search">
+                            <i class="bi bi-search fs-5"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Right Side: Auth & Admin Links -->
+                <ul class="navbar-nav ms-auto align-items-center mt-2 mt-lg-0">
+                    {% if user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link text-info fw-bold me-3" href="{% url 'manager_dashboard' %}"> Admin's Office</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link text-light fw-bold me-3">Hello, {{ user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light btn-sm me-2 fw-bold" href="{% url 'vault' %}">Vault</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-danger btn-sm fw-bold" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-bold" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-light text-dark btn-sm ms-2 fw-bold" href="{% url 'register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- THE FIX: THEME TOGGLE MOVED HERE (Right next to Logout/Register with a subtle divider) -->
+                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0 border-start ps-lg-3 border-secondary border-opacity-25">
+                        <button id="themeToggleBtn" class="btn btn-outline-secondary rounded-circle shadow-sm" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);" title="Toggle Dark/Light Mode">
+                            <i class="bi bi-moon-stars-fill fs-5" id="themeIcon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Body Container -->
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- THE FULLY RESTORED USER GUIDE MODAL -->
+    <div class="modal fade" id="userGuideModal" tabindex="-1" aria-labelledby="userGuideLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title fw-bold" id="userGuideLabel"><i class="bi bi-book-half me-2"></i> Welcome to the AI Bookstore</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs nav-fill bg-light border-bottom-0" id="guideTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold border-top-0 border-end-0 border-start-0 py-3" id="basics-tab" data-bs-toggle="tab" data-bs-target="#basics" type="button" role="tab"><i class="bi bi-search me-1"></i> Browsing</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold border-top-0 border-end-0 border-start-0 py-3" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab"><i class="bi bi-robot me-1"></i> AI Features</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold border-top-0 border-end-0 border-start-0 py-3" id="vault-tab" data-bs-toggle="tab" data-bs-target="#vault" type="button" role="tab"><i class="bi bi-safe2-fill me-1"></i> Your Vault</button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content p-4" id="guideTabsContent">
+                        <!-- Browsing Tab -->
+                        <div class="tab-pane fade show active" id="basics" role="tabpanel">
+                            <h4 class="text-primary fw-bold mb-3">Finding Your Next Read</h4>
+                            <p class="fs-6 text-muted">Whether you know exactly what you want or are just browsing, finding books here is easy!</p>
+                            
+                            <div class="mb-4">
+                                <h6 class="fw-bold"><i class="bi bi-1-circle-fill text-primary me-2"></i> The Search Bar</h6>
+                                <p class="ms-4 text-muted small">Use the search bar at the top of the screen to find specific titles, authors, or topics.</p>
+                            </div>
+                            <div class="mb-4">
+                                <h6 class="fw-bold"><i class="bi bi-2-circle-fill text-primary me-2"></i> Explore Categories</h6>
+                                <p class="ms-4 text-muted small">On the home page, click any of the category buttons (like 'Sci-Fi' or 'Romance') to instantly load the top-rated books in that genre. You can even sort them by length or publication year!</p>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold"><i class="bi bi-3-circle-fill text-primary me-2"></i> Book Details</h6>
+                                <p class="ms-4 mb-0 text-muted small">Click on any book cover to open its details. You'll see the synopsis, ratings, page count, and its price.</p>
+                            </div>
+                        </div>
+
+                        <!-- AI Features Tab -->
+                        <div class="tab-pane fade" id="ai" role="tabpanel">
+                            <h4 class="text-warning fw-bold mb-3">Experience the Magic</h4>
+                            <p class="fs-6 text-muted">We use cutting-edge technology to make finding and enjoying books a completely unique experience.</p>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold"><i class="bi bi-chat-dots-fill text-warning me-2"></i> The AI Librarian</h6>
+                                <p class="ms-4 text-muted small">Click "Ask AI Librarian" at the top to chat with our virtual book expert. You can type exactly what you're in the mood for, or click the <strong>Microphone icon</strong> to use your voice! The AI will chat with you and recommend a custom list of books based on your vibe.</p>
+                            </div>
+                            <div class="mb-4">
+                                <h6 class="fw-bold"><i class="bi bi-stars text-warning me-2"></i> The Reading Experience (Atmosphere)</h6>
+                                <p class="ms-4 text-muted small">Whenever you click on a book to view its details, our AI works behind the scenes to analyze the plot. It will automatically generate the perfect "Reading Experience" for you—suggesting a musical soundtrack, a snack pairing, and the ideal physical setting to enjoy the story.</p>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold"><i class="bi bi-box-seam-fill text-warning me-2"></i> Blind Date with a Book</h6>
+                                <p class="ms-4 mb-0 text-muted small">Feeling adventurous? Click "Blind Date" in the navigation bar. We will wrap a random book in mystery paper, hide the title, and only give you the 'vibes'. If you like what you read, you can unwrap it!</p>
+                            </div>
+                        </div>
+
+                        <!-- Vault Tab -->
+                        <div class="tab-pane fade" id="vault" role="tabpanel">
+                            <h4 class="text-success fw-bold mb-3">Managing Your Collection</h4>
+                            <p class="fs-6 text-muted">To save and buy books, you will need to create a free account. Once logged in, your Vault is your personal library.</p>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold"><i class="bi bi-bookmark-heart-fill text-success me-2"></i> Saving for Later</h6>
+                                <p class="ms-4 text-muted small">Not ready to buy? Click the "Save" button on any book to add it to the Wishlist section of your Vault so you never lose track of it.</p>
+                            </div>
+                            <div class="mb-4">
+                                <h6 class="fw-bold"><i class="bi bi-credit-card-fill text-success me-2"></i> Purchasing Books</h6>
+                                <p class="ms-4 text-muted small">Click "Buy Now" on a book to head to our secure checkout. Once purchased, the book gets permanently moved to the "Purchased" section of your Vault, and its status will update across the entire website so you know you own it.</p>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold"><i class="bi bi-book-half text-success me-2"></i> Read Now</h6>
+                                <p class="ms-4 mb-0 text-muted small">Any book you have purchased will display a "Read Now" button. Clicking this instantly opens a high-quality digital reader in a new tab so you can begin reading immediately!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-primary px-4 fw-bold" data-bs-dismiss="modal">Got it, let's explore!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- THE FIX: OUR CUSTOM 3D ENGINE JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- DARK MODE TOGGLE LOGIC -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                themeIcon.classList.add('text-warning');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                body.classList.toggle('dark-theme');
+                if (body.classList.contains('dark-theme')) {
+                    localStorage.setItem('bookstoreTheme', 'dark');
+                    themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                    themeIcon.classList.add('text-warning');
+                } else {
+                    localStorage.setItem('bookstoreTheme', 'light');
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                    themeIcon.classList.remove('text-warning');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
